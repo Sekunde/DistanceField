@@ -1,2 +1,3 @@
 #!/bin/bash
-nvcc -std=c++11 -O3 -o demo demo.cu -I/usr/local/cuda/include -L$CUDA_LIB_DIR -lcudart -lcublas -lcurand -D_MWAITXINTRIN_H_INCLUDED `pkg-config --cflags --libs opencv`
+# install opencv: sudo apt-get install libopencv-dev
+/usr/local/cuda/bin/nvcc -std=c++11 -O3 -o fusion src/fusion.cu -I/usr/local/cuda/include -L/usr/local/cuda/lib  `pkg-config --cflags --libs opencv`
