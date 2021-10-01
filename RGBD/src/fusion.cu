@@ -148,6 +148,9 @@ int main(int argc, char * argv[]) {
   cudaMalloc(&gpu_depth_im, im_height * im_width * sizeof(float));
   checkCUDA(__LINE__, cudaGetLastError());
 
+  std::vector<std::string> depth_images;
+  ListDir(data_path + "/depth", depth_images);
+
   // Loop through each depth frame and integrate TSDF voxel grid
   for (int frame_idx = first_frame_idx; frame_idx < first_frame_idx + (int)num_frames; ++frame_idx) {
 
@@ -155,11 +158,11 @@ int main(int argc, char * argv[]) {
     curr_frame_prefix << std::setw(6) << std::setfill('0') << frame_idx;
 
     // // Read current frame depth
-    std::string depth_im_file = data_path + "/frame-" + curr_frame_prefix.str() + ".depth.png";
+    std::string depth_im_file = data_path + "/depth" + "/frame-" + curr_frame_prefix.str() + ".depth.png";
     ReadDepth(depth_im_file, im_height, im_width, depth_im);
 
     // Read base frame camera pose
-    std::string cam2world_file = data_path + "/frame-" + curr_frame_prefix.str() + ".pose.txt";
+    std::string cam2world_file = data_path +  "/pose" + "/frame-" + curr_frame_prefix.str() + ".pose.txt";
     std::vector<float> cam2world_vec = LoadMatrixFromFile(cam2world_file, 4, 4);
     std::copy(cam2world_vec.begin(), cam2world_vec.end(), cam2world);
 

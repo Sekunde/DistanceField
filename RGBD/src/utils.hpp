@@ -3,7 +3,27 @@
 // ---------------------------------------------------------
 
 #include <vector>
+#include <dirent.h> 
+#include <stdio.h> 
+#include <string>
+#include <iostream>
 #include <opencv2/opencv.hpp>
+
+
+void ListDir(const char* dir_path, std::vector<std::string>& out, bool list_dir=false)
+{
+  DIR *d;
+  struct dirent *dir;
+  d = opendir(dir_path);
+  if (d) {
+    while ((dir = readdir(d)) != NULL) {
+      if (dir->d_type == DT_DIR && !list_dir)
+        continue;
+      out.push_back(dir->d_name);
+    }
+    closedir(d);
+  }
+}
 
 // Compute surface points from TSDF voxel grid and save points to point cloud file
 void SaveVoxelGrid2SurfacePointCloud(const std::string &file_name, int voxel_grid_dim_x, int voxel_grid_dim_y, int voxel_grid_dim_z,
