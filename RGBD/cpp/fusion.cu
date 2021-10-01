@@ -92,9 +92,7 @@ int main(int argc, char * argv[])
   int voxel_grid_dim_x = int((world_maxx-world_minx) / voxel_size) + 1;
   int voxel_grid_dim_y = int((world_maxy-world_miny) / voxel_size) + 1;
   int voxel_grid_dim_z = int((world_maxz-world_minz) / voxel_size) + 1;
-  std::cout << voxel_grid_dim_x << std::endl;
-  std::cout << voxel_grid_dim_y << std::endl;
-  std::cout << voxel_grid_dim_z << std::endl;
+  std::cout << "volume size: "<< voxel_grid_dim_x << "x" << voxel_grid_dim_y << "x" << voxel_grid_dim_z << std::endl;
 
   float cam_K[3 * 3];
   float cam2world[4 * 4];
@@ -165,10 +163,10 @@ int main(int argc, char * argv[])
   checkCUDA(__LINE__, cudaGetLastError());
 
   // Compute surface points from TSDF voxel grid and save to point cloud .ply file
-  std::cout << "Saving surface point cloud (tsdf.ply)..." << std::endl;
-  SaveVoxelGrid2SurfacePointCloud("tsdf.ply", voxel_grid_dim_x, voxel_grid_dim_y, voxel_grid_dim_z, 
-                                  voxel_size, world_minx, world_miny, world_minz, 
-                                  voxel_grid_TSDF, voxel_grid_weight, 0.2f, 0.0f);
+  //std::cout << "Saving surface point cloud (tsdf.ply)..." << std::endl;
+  //SaveVoxelGrid2SurfacePointCloud("tsdf.ply", voxel_grid_dim_x, voxel_grid_dim_y, voxel_grid_dim_z, 
+  //                                voxel_size, world_minx, world_miny, world_minz, 
+  //                                voxel_grid_TSDF, voxel_grid_weight, 0.2f, 0.0f);
 
 
   // Save TSDF voxel grid and its parameters to disk as binary file (float array)
