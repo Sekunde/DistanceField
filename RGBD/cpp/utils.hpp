@@ -86,7 +86,8 @@ std::vector<float> LoadMatrixFromFile(std::string filename, int M, int N) {
 
 // Read a depth image with size H x W and save the depth values (in meters) into a float array (in row-major order)
 // The depth image file is assumed to be in 16-bit PNG format, depth in millimeters
-void ReadDepth(std::string filename, int H, int W, float * depth) {
+void ReadDepth(std::string filename, int H, int W, float * depth, float depth_unit, float depth_invalid) 
+{
   cv::Mat depth_mat = cv::imread(filename, CV_LOAD_IMAGE_UNCHANGED);
   if (depth_mat.empty()) {
     std::cout << "Error: depth image file not read!" << std::endl;
@@ -94,8 +95,8 @@ void ReadDepth(std::string filename, int H, int W, float * depth) {
   }
   for (int r = 0; r < H; ++r)
     for (int c = 0; c < W; ++c) {
-      depth[r * W + c] = (float)(depth_mat.at<unsigned short>(r, c)) / 1000.0f;
-      if (depth[r * W + c] > 6.0f) // Only consider depth < 6m
+      depth[r * W + c] = (float)(depth_mat.at<unsigned short>(r, c)) / depth_unit;
+      if (depth[r * W + c] == depth_invalid) // filter depth invalid values
         depth[r * W + c] = 0;
     }
 }
