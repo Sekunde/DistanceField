@@ -86,5 +86,9 @@ if __name__ == "__main__":
 
   print("Saving pointcloud to pc.ply...")
   pointcloud = np.stack((np.abs(data) < 1).nonzero(),1)
+  pointcloud = pointcloud * voxel_size
+  pointcloud[:,0] += world_minx
+  pointcloud[:,1] += world_miny
+  pointcloud[:,2] += world_minz
   pcwrite('pc.ply', pointcloud)
 

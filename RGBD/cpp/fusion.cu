@@ -101,7 +101,7 @@ int main(int argc, char * argv[])
   float cam_K[3 * 3];
   float cam2world[4 * 4];
   float depth_im[im_height * im_width];
-  float trunc_margin = voxel_size * 3;
+  float trunc_margin = voxel_size * 5;
 
   // Read camera intrinsics
   std::vector<float> cam_K_vec = LoadMatrixFromFile(cam_K_file, 3, 3);
@@ -111,7 +111,7 @@ int main(int argc, char * argv[])
   float * voxel_grid_TSDF = new float[voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z];
   float * voxel_grid_weight = new float[voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z];
   for (int i = 0; i < voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z; ++i)
-    voxel_grid_TSDF[i] = 3;
+    voxel_grid_TSDF[i] = 5;
   memset(voxel_grid_weight, 0, sizeof(float) * voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z);
 
   // Load variables to GPU memory
