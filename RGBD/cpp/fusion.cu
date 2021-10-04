@@ -67,31 +67,30 @@ void Integrate(float * cam_K, float * cam2world, float * depth_im,
 // Volume is aligned with respect to the camera coordinates of the first frame (a.k.a. base frame)
 int main(int argc, char * argv[]) 
 {
-  if (argc != 16)
+  if (argc != 15)
   {
 		
     std::cout << "parameters: " << std::endl;
-    std::cout << "data_path cam_K_file world_minxyz-maxyz voxel_size image_width image_height depth_unit depth_min depth_max depth_invalid" << std::endl;
+    std::cout << "data_path world_minxyz-maxyz voxel_size image_width image_height depth_unit depth_min depth_max depth_invalid" << std::endl;
 	return 1;
 
   }
 
   // Manual parameters
   std::string data_path = argv[1];
-  std::string cam_K_file = argv[2];
-  float world_minx = atof(argv[3]);
-  float world_miny = atof(argv[4]);
-  float world_minz = atof(argv[5]);
-  float world_maxx = atof(argv[6]);
-  float world_maxy = atof(argv[7]);
-  float world_maxz = atof(argv[8]);
-  float voxel_size = atof(argv[9]);
-  int im_width = atoi(argv[10]);
-  int im_height = atoi(argv[11]);
-  float depth_unit = atoi(argv[12]);
-  float depth_min = atoi(argv[13]);
-  float depth_max = atoi(argv[14]);
-  float depth_invalid = atoi(argv[15]);
+  float world_minx = atof(argv[2]);
+  float world_miny = atof(argv[3]);
+  float world_minz = atof(argv[4]);
+  float world_maxx = atof(argv[5]);
+  float world_maxy = atof(argv[6]);
+  float world_maxz = atof(argv[7]);
+  float voxel_size = atof(argv[8]);
+  int im_width = atoi(argv[9]);
+  int im_height = atoi(argv[10]);
+  float depth_unit = atoi(argv[11]);
+  float depth_min = atoi(argv[12]);
+  float depth_max = atoi(argv[13]);
+  float depth_invalid = atoi(argv[14]);
   float trunc_margin = 5.0f;
 
   int voxel_grid_dim_x = int((world_maxx-world_minx) / voxel_size) + 1;
@@ -103,9 +102,6 @@ int main(int argc, char * argv[])
   float cam2world[4 * 4];
   float depth_im[im_height * im_width];
 
-  // Read camera intrinsics
-  std::vector<float> cam_K_vec = LoadMatrixFromFile(cam_K_file, 3, 3);
-  std::copy(cam_K_vec.begin(), cam_K_vec.end(), cam_K);
 
   // Initialize voxel grid
   float * voxel_grid_TSDF = new float[voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z];
@@ -127,7 +123,6 @@ int main(int argc, char * argv[])
   float * gpu_cam2world;
   float * gpu_depth_im;
   cudaMalloc(&gpu_cam_K, 3 * 3 * sizeof(float));
-  cudaMemcpy(gpu_cam_K, cam_K, 3 * 3 * sizeof(float), cudaMemcpyHostToDevice);
   cudaMalloc(&gpu_cam2world, 4 * 4 * sizeof(float));
   cudaMalloc(&gpu_depth_im, im_height * im_width * sizeof(float));
   checkCUDA(__LINE__, cudaGetLastError());
@@ -141,20 +136,24 @@ int main(int argc, char * argv[])
     std::string cur_frame_prefix = depth_images[frame_idx].substr(0, depth_images[frame_idx].size()-4);
 
      // Read current frame depth
-    std::string depth_im_file = data_path + "/depth/" + cur_frame_prefix + ".png";
-    ReadDepth(depth_im_file, im_height, im_width, depth_im, depth_unit, depth_invalid);
+	std::string depth_im_file = data_path + "/depth/" + cur_frame_prefix + ".png";
+	ReadDepth(depth_im_file, im_height, im_width, depth_im, depth_unit, depth_invalid);
+    cudaMemcpy(gpu_depth_im, depth_im, im_height * im_width * sizeof(float), cudaMemcpyHostToDevice);
+
+    // Read camera intrinsics
+    std::vector<float> cam_K_vec = LoadMatrixFromFile(data_path + "/intrinsic/" + cur_frame_prefix + ".txt", 3, 3);
+    std::copy(cam_K_vec.begin(), cam_K_vec.end(), cam_K);
+    cudaMemcpy(gpu_cam_K, cam_K, 3 * 3 * sizeof(float), cudaMemcpyHostToDevice);
 
     // Read base frame camera pose
     std::string cam2world_file = data_path +  "/pose/" + cur_frame_prefix + ".txt";
     std::vector<float> cam2world_vec = LoadMatrixFromFile(cam2world_file, 4, 4);
     std::copy(cam2world_vec.begin(), cam2world_vec.end(), cam2world);
-
     cudaMemcpy(gpu_cam2world, cam2world, 4 * 4 * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(gpu_depth_im, depth_im, im_height * im_width * sizeof(float), cudaMemcpyHostToDevice);
+
+	// fusion current frame
     checkCUDA(__LINE__, cudaGetLastError());
-
     std::cout << "Fusing: " << depth_im_file << std::endl;
-
     Integrate <<< voxel_grid_dim_z, voxel_grid_dim_y >>>(gpu_cam_K, gpu_cam2world, gpu_depth_im,
                                                          im_height, im_width, voxel_grid_dim_x, voxel_grid_dim_y, voxel_grid_dim_z,
                                                          world_minx, world_miny, world_minz, voxel_size, trunc_margin,
