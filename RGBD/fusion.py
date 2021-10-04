@@ -15,10 +15,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='volumetric fusion')
     parser.add_argument('--data', type=str, default='data/rgbd-frames')
     parser.add_argument('--voxel_size', type=float, default=0.02)
+    parser.add_argument('--trunc', type=float, help='truncation of voxels', default=5.0)
     parser.add_argument('--depth_min', type=float, default=0.0)
     parser.add_argument('--depth_max', type=float, default=6.0)
     parser.add_argument('--depth_invalid', type=float, default=0.0)
     parser.add_argument('--depth_unit', type=float, default=4000)
+    parser.add_argument('--gpu', dest='use_gpu', action='store_true')
+
 
     args = parser.parse_args()
     return args
@@ -28,13 +31,6 @@ if __name__ == "__main__":
   args = parse_args()
   print("Estimating voxel volume bounds...")
   vol_bnds = np.zeros((3,2))
-  vol_bnds[0,0] = -10.28
-  vol_bnds[1,0] = 10.0
-  vol_bnds[2,0] = -1.33
-
-  vol_bnds[0,1] = 0.0
-  vol_bnds[1,1] = 17.2
-  vol_bnds[2,1] = 2.5
   depth_images = os.listdir(os.path.join(args.data, 'depth'))
   for depth_image in depth_images:
     # Read depth image and camera pose
@@ -50,9 +46,8 @@ if __name__ == "__main__":
 
     # Compute camera view frustum and extend convex hull
     view_frust_pts = get_view_frustum(depth_im, cam_intr, cam_pose)
-    break
-  #  vol_bnds[:,0] = np.minimum(vol_bnds[:,0], np.amin(view_frust_pts, axis=1))
-  #  vol_bnds[:,1] = np.maximum(vol_bnds[:,1], np.amax(view_frust_pts, axis=1))
+    vol_bnds[:,0] = np.minimum(vol_bnds[:,0], np.amin(view_frust_pts, axis=1))
+    vol_bnds[:,1] = np.maximum(vol_bnds[:,1], np.amax(view_frust_pts, axis=1))
 
   # ======================================================================================================== #
   # Integrate
@@ -64,14 +59,20 @@ if __name__ == "__main__":
   # Integrate observation into voxel volume (assume color aligned with depth)
   image_width = depth_im.shape[1]
   image_height = depth_im.shape[0]
-  cmd = './fusion {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(args.data, vol_bnds[0,0], vol_bnds[1,0], vol_bnds[2,0], 
-                                                                       vol_bnds[0,1], vol_bnds[1,1], vol_bnds[2,1],
-                                                                       args.voxel_size, image_width, image_height, 
-                                                                       args.depth_unit, args.depth_min, 
-                                                                       args.depth_max, args.depth_invalid)
+  cmd = '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(args.data, vol_bnds[0,0], vol_bnds[1,0], vol_bnds[2,0], 
+                                                              vol_bnds[0,1], vol_bnds[1,1], vol_bnds[2,1],
+                                                              args.voxel_size, args.trunc, image_width, image_height, 
+                                                              args.depth_unit, args.depth_min, args.depth_max, args.depth_invalid)
+  import ipdb
+  ipdb.set_trace()
+  if args.use_gpu:
+      print('Fusing using GPU')
+      fusion_cmd = './fusion_gpu '
+  else:
+      print('Fusing using CPU')
+      fusion_cmd = './fusion_cpu '
+  os.system(fusion_cmd + cmd)
 
-
-  os.system(cmd)
 
   fps = len(depth_images) / (time.time() - t0_elapse)
   print("Average FPS: {:.2f}".format(fps))

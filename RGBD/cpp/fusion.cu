@@ -9,6 +9,21 @@
 #include <string>
 #include "utils.hpp"
 
+void FatalError(const int lineNumber = 0) {
+  std::cerr << "FatalError";
+  if (lineNumber != 0) std::cerr << " at LINE " << lineNumber;
+  std::cerr << ". Program Terminated." << std::endl;
+  cudaDeviceReset();
+  exit(EXIT_FAILURE);
+}
+
+void checkCUDA(const int lineNumber, cudaError_t status) {
+  if (status != cudaSuccess) {
+    std::cerr << "CUDA failure at LINE " << lineNumber << ": " << status << std::endl;
+    FatalError();
+  }
+}
+
 // CUDA kernel function to integrate a TSDF voxel volume given depth images
 __global__
 void Integrate(float * cam_K, float * cam2world, float * depth_im,
@@ -67,14 +82,12 @@ void Integrate(float * cam_K, float * cam2world, float * depth_im,
 // Volume is aligned with respect to the camera coordinates of the first frame (a.k.a. base frame)
 int main(int argc, char * argv[]) 
 {
-  if (argc != 15)
+  if (argc != 16)
   {
-		
+    		
     std::cout << "parameters: " << std::endl;
-    std::cout << "data_path world_minxyz-maxyz voxel_size image_width image_height depth_unit depth_min depth_max depth_invalid" << std::endl;
-	return 1;
-
-  }
+    std::cout << "data_path world_minxyz-maxyz voxel_size trunc image_width image_height depth_unit depth_min depth_max depth_invalid" << std::endl;
+    return 1;}
 
   // Manual parameters
   std::string data_path = argv[1];
@@ -85,13 +98,13 @@ int main(int argc, char * argv[])
   float world_maxy = atof(argv[6]);
   float world_maxz = atof(argv[7]);
   float voxel_size = atof(argv[8]);
-  int im_width = atoi(argv[9]);
-  int im_height = atoi(argv[10]);
-  float depth_unit = atoi(argv[11]);
-  float depth_min = atoi(argv[12]);
-  float depth_max = atoi(argv[13]);
-  float depth_invalid = atoi(argv[14]);
-  float trunc_margin = 5.0f;
+  float trunc_margin = atof(argv[9]);
+  int im_width = atoi(argv[10]);
+  int im_height = atoi(argv[11]);
+  float depth_unit = atoi(argv[12]);
+  float depth_min = atoi(argv[13]);
+  float depth_max = atoi(argv[14]);
+  float depth_invalid = atoi(argv[15]);
 
   int voxel_grid_dim_x = int((world_maxx-world_minx) / voxel_size) + 1;
   int voxel_grid_dim_y = int((world_maxy-world_miny) / voxel_size) + 1;
