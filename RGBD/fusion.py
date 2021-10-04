@@ -79,7 +79,7 @@ if __name__ == "__main__":
   data = reader.read('float', dimX * dimY * dimZ)
   reader.close()
   data = np.reshape(data, (dimX, dimY, dimZ), order='F').astype(np.float32)
-  #np.save('sdf', data)
+  np.save('sdf', data)
 
   print("Saving mesh to mesh.ply...")
   verts, faces, norms = marching_cubes(data, voxel_size, world_minx, world_miny, world_minz)

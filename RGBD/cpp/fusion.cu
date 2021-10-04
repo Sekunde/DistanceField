@@ -50,12 +50,12 @@ void Integrate(float * cam_K, float * cam2world, float * depth_im,
 
     float diff = depth_val - pt_cam_z;
 
-    if (diff <= -trunc_margin)
+    if (diff <= -trunc_margin * voxel_size)
       continue;
 
     // Integrate
     int volume_idx = pt_grid_z * voxel_grid_dim_y * voxel_grid_dim_x + pt_grid_y * voxel_grid_dim_x + pt_grid_x;
-    float dist = fmin(1.0f, diff / trunc_margin);
+    float dist = fmin(trunc_margin, diff / voxel_size);
     float weight_old = voxel_grid_weight[volume_idx];
     float weight_new = weight_old + 1.0f;
     voxel_grid_weight[volume_idx] = weight_new;
@@ -92,6 +92,7 @@ int main(int argc, char * argv[])
   float depth_min = atoi(argv[13]);
   float depth_max = atoi(argv[14]);
   float depth_invalid = atoi(argv[15]);
+  float trunc_margin = 5.0f;
 
   int voxel_grid_dim_x = int((world_maxx-world_minx) / voxel_size) + 1;
   int voxel_grid_dim_y = int((world_maxy-world_miny) / voxel_size) + 1;
@@ -101,7 +102,6 @@ int main(int argc, char * argv[])
   float cam_K[3 * 3];
   float cam2world[4 * 4];
   float depth_im[im_height * im_width];
-  float trunc_margin = voxel_size * 5;
 
   // Read camera intrinsics
   std::vector<float> cam_K_vec = LoadMatrixFromFile(cam_K_file, 3, 3);
@@ -111,7 +111,7 @@ int main(int argc, char * argv[])
   float * voxel_grid_TSDF = new float[voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z];
   float * voxel_grid_weight = new float[voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z];
   for (int i = 0; i < voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z; ++i)
-    voxel_grid_TSDF[i] = 5;
+    voxel_grid_TSDF[i] = trunc_margin;
   memset(voxel_grid_weight, 0, sizeof(float) * voxel_grid_dim_x * voxel_grid_dim_y * voxel_grid_dim_z);
 
   // Load variables to GPU memory
