@@ -9,7 +9,6 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-
 void ListDir(const std::string& dir_path, std::vector<std::string>& out, bool list_dir=false)
 {
   DIR *d;
@@ -91,7 +90,6 @@ void ReadDepth(std::string filename, int H, int W, float * depth, float depth_un
   cv::Mat depth_mat = cv::imread(filename, CV_LOAD_IMAGE_UNCHANGED);
   if (depth_mat.empty()) {
     std::cout << "Error: depth image file not read!" << std::endl;
-    cv::waitKey(0);
   }
   for (int r = 0; r < H; ++r)
     for (int c = 0; c < W; ++c) {

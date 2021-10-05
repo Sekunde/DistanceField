@@ -16,6 +16,7 @@ void Integrate(float * cam_K, float * cam2world, float * depth_im, int im_height
 			   float depth_min, float depth_max) 
 {
 
+#pragma omp parallel for
   for (int pt_grid_x = 0; pt_grid_x < voxel_grid_dim_x; ++pt_grid_x) 
     for (int pt_grid_y = 0; pt_grid_y < voxel_grid_dim_y; ++pt_grid_y)
       for (int pt_grid_z = 0; pt_grid_z < voxel_grid_dim_z; ++pt_grid_z) 

@@ -13,7 +13,7 @@ from BinaryReader import BinaryReader
 def parse_args():
     """parse input arguments"""
     parser = argparse.ArgumentParser(description='volumetric fusion')
-    parser.add_argument('--data', type=str, default='data/rgbd-frames')
+    parser.add_argument('--data', type=str, default='data/p5wJjkQkbXX/')
     parser.add_argument('--voxel_size', type=float, default=0.02)
     parser.add_argument('--trunc', type=float, help='truncation of voxels', default=5.0)
     parser.add_argument('--depth_min', type=float, default=0.0)
