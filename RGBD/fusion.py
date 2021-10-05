@@ -63,8 +63,6 @@ if __name__ == "__main__":
                                                               vol_bnds[0,1], vol_bnds[1,1], vol_bnds[2,1],
                                                               args.voxel_size, args.trunc, image_width, image_height, 
                                                               args.depth_unit, args.depth_min, args.depth_max, args.depth_invalid)
-  import ipdb
-  ipdb.set_trace()
   if args.use_gpu:
       print('Fusing using GPU')
       fusion_cmd = './fusion_gpu '

@@ -138,9 +138,9 @@ def pcwrite(filename, xyzrgb):
 
 
 if __name__ == "__main__":
-    depth_im = 'data/panoptic3d/depth/1.png'
-    cam_pose = 'data/panoptic3d/pose/1.txt'
-    cam_intr = 'data/panoptic3d/camera-intrinsics.txt'
+    depth_im = 'data/p5wJjkQkbXX/depth/bb38ac9e750f4bbabd9ac4143aca2a7a_d0_0.png'
+    cam_pose = 'data/p5wJjkQkbXX/pose/bb38ac9e750f4bbabd9ac4143aca2a7a_d0_0.txt'
+    cam_intr = 'data/p5wJjkQkbXX/intrinsic/bb38ac9e750f4bbabd9ac4143aca2a7a_d0_0.txt'
 
     depth_im = cv2.imread(depth_im, -1).astype(float)
     depth_im /= 4000.  # depth is saved in 16-bit PNG in millimeters
